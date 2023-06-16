@@ -13,46 +13,66 @@ app.use('/login', (req, res, next) => {
 });
 
 app.use('/chat', (req, res, next) => {
-  res.send('<form method="POST" action="/sent" ><label>Message</label><input type="text" name="message"/><button type="submit">Send</button></form>');
-});
-
-// Move the '/sent' route below the '/chat' route
-app.use('/sent', (req, res, next) => {
-  // Get the username and message from the request body
+  // Display the chat
+  let chatDisplay = '';
   const username = req.body.username;
-  const message = req.body.message;
-  
-  // Create an object to store the username and message
-  const chatEntry = {
-    username,
-    message
-  };
+//   saveUsernameToFile(username); // Save username to a text file
+  messages.forEach(entry => {
+    chatDisplay += `${entry.username}: ${entry.message}<br>`;
+  });
 
-  // Add the chat entry to the array
-  messages.push(chatEntry);
-
-  // Log the chat entry to the console
-  console.log(chatEntry);
-
-  // Save the messages to a text file
-  saveMessagesToFile();
-
-  res.redirect('/chat');
+  res.send(`
+    <h1>Chat</h1>
+    <div>${chatDisplay}</div>
+    <form method="POST" action="/sent" >
+      <label>Message</label>
+      <input type="text" name="message"/>
+      <input type="hidden" name="username" value="${req.body.username}"/>
+      <button type="submit">Send</button>
+    </form>
+  `);
 });
 
-// Function to save messages to a text file
-function saveMessagesToFile() {
-  // Convert the array of chat entries to a string
-  const chatEntriesString = messages.map(entry => `${entry.username}: ${entry.message}`).join('\n');
-
-  // Write the chat entries to a text file
-  fs.writeFile('messages.txt', chatEntriesString, (err) => {
-    if (err) {
-      console.error('Error saving messages:', err);
-    } else {
-      console.log('Messages saved to messages.txt');
-    }
+// function saveUsernameToFile(username) {
+//     // Write the username to the username.txt file
+//     fs.writeFile('username.txt', username, (err) => {
+//       if (err) {
+//         console.error('Error saving username:', err);
+//       } else {
+//         console.log('Username saved to username.txt');
+//       }
+//     });
+//   }
+  
+  app.use('/sent', (req, res, next) => {
+    // Get the username and message from the request body
+    const username = req.body.username;
+    const message = req.body.message;
+  
+    // Save the username to the username.txt file
+    // saveUsernameToFile(username);
+  
+    // Create an object to store the username and message
+    const chatEntry = {
+      username,
+      message
+    };
+  
+    // Add the chat entry to the array
+    messages.push(chatEntry);
+  
+    // Log the chat entry to the console
+    console.log('CHAT', chatEntry);
+  
+    // Save the messages to a text file
+    // saveMessagesToFile();
+  
+    res.redirect('/chat');
   });
-}
+  
+  
+  
+// Function to save the username to a text file
+
 
 app.listen(3000);
